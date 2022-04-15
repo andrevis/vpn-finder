@@ -10,7 +10,7 @@ LimitCORE=infinity
 LimitNOFILE=infinity
 
 ExecStart=python3 /opt/vpn-finder/vpn_finder.py
-ExecReload=/bin/kill -s SIGUSR1 $MAINPID
+ExecReload=/bin/kill -s SIGINT $MAINPID
 
 Restart=always
 RestartPreventExitStatus=3
