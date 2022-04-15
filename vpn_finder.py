@@ -5,9 +5,13 @@ import base64
 import logging
 import os
 import requests
+import signal
 import sys
 import telebot
 from telebot import types
+
+RUNNING = True
+
 
 TOKEN='5310592421:AAH9f5sbngLbHuIzsd6qWTvz1YoOWqLQ9YY'
 
@@ -111,4 +115,13 @@ def start(message):
 def get(message):
     get_config(message)
 
+
+def signal_handler(sig, frame):
+    bot.stop_bot()
+    print('Interrupted Ctrl+C')
+
+signal.signal(signal.SIGINT, signal_handler)
+
+
 bot.infinity_polling()
+
