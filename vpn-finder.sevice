@@ -2,13 +2,13 @@
 Description=vpn-finder
 
 [Service]
-Type=forking
+Type=idle
 User=root
 Group=root
 
 ExecStart=/usr/bin/python3 /opt/vpn-finder/vpn_finder.py
 ExecStop=/bin/kill -s SIGINT $MAINPID
-TimeoutSec=10
+TimeoutSec=300
 RestartSec=5
 Restart=on-failure
 

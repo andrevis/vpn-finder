@@ -9,13 +9,11 @@ import signal
 import sys
 import telebot
 from telebot import types
-import threading
 
 TOKEN='5310592421:AAH9f5sbngLbHuIzsd6qWTvz1YoOWqLQ9YY'
-
 VPN_LINK = 'http://www.vpngate.net/api/iphone/'
 LOG_FORMAT = '%(asctime)s(%(threadName)s) %(levelname)s - %(message)s'
-CHUNK_SIZE = 1024 * 1024 #1Mb
+CHUNK_SIZE = 1024 * 1024 # 1Mb
 CANDIDATES = 10
 
 handler = logging.StreamHandler(sys.stdout)
@@ -23,7 +21,6 @@ handler.setFormatter(logging.Formatter(fmt=LOG_FORMAT))
 logging.getLogger().addHandler(handler)
 
 bot = telebot.TeleBot(TOKEN)
-current_config = None
 
 def get_flag(code):
     flag_offset = 0x1F1E6
@@ -108,7 +105,6 @@ def get_config(message):
 def start(message):
     get_config(message)
 
-
 @bot.message_handler(func=lambda message: True)
 def get(message):
     get_config(message)
@@ -120,5 +116,5 @@ def signal_handler(sig, frame):
 
 signal.signal(signal.SIGINT, signal_handler)
 
-
 bot.infinity_polling()
+sys.exit(0)
