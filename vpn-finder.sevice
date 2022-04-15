@@ -1,22 +1,16 @@
 [Unit]
-Description=vpn-finder service
-Documentation=
+Description=vpn-finder
 
 [Service]
-Type=notify
+Type=forking
 User=root
 Group=root
-LimitCORE=infinity
-LimitNOFILE=infinity
 
-ExecStart=python3 /opt/vpn-finder/vpn_finder.py
-ExecReload=/bin/kill -s SIGINT $MAINPID
-
-Restart=always
-RestartPreventExitStatus=3
-TimeoutStartSec=60
-TimeoutStopSec=60
+ExecStart=/usr/bin/python3 /opt/vpn-finder/vpn_finder.py
+ExecStop=/bin/kill -s SIGINT $MAINPID
+TimeoutSec=10
 RestartSec=5
+Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target

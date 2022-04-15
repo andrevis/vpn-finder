@@ -9,9 +9,7 @@ import signal
 import sys
 import telebot
 from telebot import types
-
-RUNNING = True
-
+import threading
 
 TOKEN='5310592421:AAH9f5sbngLbHuIzsd6qWTvz1YoOWqLQ9YY'
 
@@ -124,4 +122,3 @@ signal.signal(signal.SIGINT, signal_handler)
 
 
 bot.infinity_polling()
-
