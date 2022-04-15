@@ -43,13 +43,10 @@ def speed_str(speed):
     else:
         return str(int(speed / (1024 * 1024) * 100) / 100) + " Mb/s"
 
-def create_keyboard():
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    find = types.KeyboardButton("Найти")
-    markup.add(find)
-
 def get_config(message):
-    keyboard = create_keyboard()
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    find = types.KeyboardButton("Найти")
+    keyboard.add(find)
 
     csv = get_csv(VPN_LINK)
     if not csv:

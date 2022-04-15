@@ -1,0 +1,22 @@
+[Unit]
+Description=vpn-finder service
+Documentation=
+
+[Service]
+Type=notify
+User=root
+Group=root
+LimitCORE=infinity
+LimitNOFILE=infinity
+
+ExecStart=python3 /opt/vpn-finder/vpn_finder.py
+ExecReload=/bin/kill -s SIGUSR1 $MAINPID
+
+Restart=always
+RestartPreventExitStatus=3
+TimeoutStartSec=60
+TimeoutStopSec=60
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
