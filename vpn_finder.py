@@ -66,7 +66,7 @@ class Utils:
     @staticmethod
     def get_speed(host):
         st = speedtest.Speedtest()
-        return Utils.get_speed_str(st.download())
+        return st.download()
 
 
 class BestScoreSelector:
@@ -74,6 +74,10 @@ class BestScoreSelector:
     def get(layout, candidates):
         return max(candidates, key=lambda row: row[layout["Score"]])
 
+class MaxSpeedPerUserSelector:
+    @staticmethod
+    def get(layout, candidates):
+        return max(candidates, key=lambda row: float(row[layout["Speed"]]) / int(row[layout["TotalUsers"]]))
 
 class LowPingSelector:
     @staticmethod
@@ -88,6 +92,11 @@ class LowPingSelector:
                 min_ping = ping
                 min_index = index
         return candidates[min_index]
+
+class MaxSpeedSelector:
+    @staticmethod
+    def get(layout, candidates):
+        return max(candidates, key=lambda row: int(row[layout["Speed"]]))
 
 
 class Bot(threading.Thread):
@@ -147,7 +156,7 @@ class Bot(threading.Thread):
 
         logging.debug(f'{layout}')
 
-        best = LowPingSelector.get(layout, candidates)
+        best = MaxSpeedSelector.get(layout, candidates)
         if not best:
             logging.error(f"Cannot obtain vest VPN server")
             msg = self.__bot__.send_message(message.chat.id, text="Не получается определить лучший сервер", reply_markup=keyboard)
@@ -159,7 +168,7 @@ class Bot(threading.Thread):
         country = best[layout['CountryLong']]
         users   = best[layout['TotalUsers']]
         ping    = Utils.get_ping(ip)
-        speed   = Utils.get_speed(ip)
+        speed   = Utils.get_speed_str(Utils.get_speed(ip))
         flag    = Utils.get_flag(best[layout['CountryShort']])
 
         filename = name + ".ovpn"
