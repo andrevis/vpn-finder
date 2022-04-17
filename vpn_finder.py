@@ -20,7 +20,7 @@ TOKEN='5310592421:AAH9f5sbngLbHuIzsd6qWTvz1YoOWqLQ9YY'
 VPN_LINK = 'http://www.vpngate.net/api/iphone/'
 LOG_FORMAT = '%(asctime)s(%(threadName)s) %(levelname)s - %(message)s'
 CHUNK_SIZE = 1024 * 1024 # 1Mb
-CANDIDATES = 10
+MAX_CANDIDATES = 5
 MAX_HISTORY = 10
 
 handler = logging.StreamHandler(sys.stdout)
@@ -96,8 +96,16 @@ class LowPingSelector:
 class MaxSpeedSelector:
     @staticmethod
     def get(layout, candidates):
-        return max(candidates, key=lambda row: int(row[layout["Speed"]]))
+        max_speed = 0
+        max_index = 0
 
+        for index, entry in enumerate(candidates):
+            ip      = entry[layout['IP']]
+            speed    = Utils.get_speed(ip)
+            if speed > max_speed:
+                max_speed = speed
+                max_index = index
+        return candidates[max_index]
 
 class Bot(threading.Thread):
     __bot__ = telebot.TeleBot(TOKEN)
@@ -151,7 +159,7 @@ class Bot(threading.Thread):
 
             candidates.append(line.split(','))
 
-            if len(candidates) >= CANDIDATES:
+            if len(candidates) >= MAX_CANDIDATES:
                 break
 
         logging.debug(f'{layout}')
