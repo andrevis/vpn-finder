@@ -70,18 +70,11 @@ class Utils:
 
 
 class BestScoreSelector:
-    @staticmethod
-    def get(layout, candidates):
+    def get(self, layout, candidates):
         return max(candidates, key=lambda row: row[layout["Score"]])
 
-class MaxSpeedPerUserSelector:
-    @staticmethod
-    def get(layout, candidates):
-        return max(candidates, key=lambda row: float(row[layout["Speed"]]) / int(row[layout["TotalUsers"]]))
-
 class LowPingSelector:
-    @staticmethod
-    def get(layout, candidates):
+    def get(self, layout, candidates):
         min_ping = sys.maxsize - 1
         min_index = 0
 
@@ -94,17 +87,31 @@ class LowPingSelector:
         return candidates[min_index]
 
 class MaxSpeedSelector:
-    @staticmethod
-    def get(layout, candidates):
-        max_speed = 0
+    def get(self, layout, candidates):
         max_index = 0
+        max_speed = 0
+
+        threads = []
+        results = len(candidates) * [None]
+
+        def calc_speed(index, entry):
+            ip = entry[layout['IP']]
+            speed = Utils.get_speed(ip)
+            results[index] = speed
 
         for index, entry in enumerate(candidates):
-            ip      = entry[layout['IP']]
-            speed    = Utils.get_speed(ip)
+            thread = threading.Thread(target=calc_speed, name=str(index), args=(index, entry))
+            thread.start()
+            threads.append(thread)
+
+        for thread in threads:
+            thread.join()
+
+        for index, speed in enumerate(results):
             if speed > max_speed:
                 max_speed = speed
                 max_index = index
+
         return candidates[max_index]
 
 class Bot(threading.Thread):
@@ -118,9 +125,18 @@ class Bot(threading.Thread):
         def __start__(message):
             self.__get_config__(message)
 
+        @self.__bot__.message_handler(commands=['ping'])
+        def __start__(message):
+            self.__get_config__(message, LowPingSelector())
+
+        @self.__bot__.message_handler(commands=['speed'])
+        def __start__(message):
+            self.__get_config__(message, MaxSpeedSelector())
+
         @self.__bot__.message_handler(func=lambda message: True)
         def __get__(message):
             self.__get_config__(message)
+
 
     def run(self):
         self.__bot__.infinity_polling()
@@ -134,7 +150,7 @@ class Bot(threading.Thread):
             head = self.__history__.get()
             self.__bot__.delete_message(head.chat.id, head.message_id)
 
-    def __get_config__(self, message):
+    def __get_config__(self, message, selector=BestScoreSelector()):
         self.push(message)
 
         keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -164,7 +180,7 @@ class Bot(threading.Thread):
 
         logging.debug(f'{layout}')
 
-        best = MaxSpeedSelector.get(layout, candidates)
+        best = selector.get(layout, candidates)
         if not best:
             logging.error(f"Cannot obtain vest VPN server")
             msg = self.__bot__.send_message(message.chat.id, text="Не получается определить лучший сервер", reply_markup=keyboard)
