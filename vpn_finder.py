@@ -115,11 +115,13 @@ class MaxSpeedSelector:
         return candidates[max_index]
 
 class Bot(threading.Thread):
-    __bot__ = telebot.TeleBot(TOKEN)
+    __bot__ = None
     __history__ = queue.Queue()
+    __running__ = True
 
     def __init__(self):
         threading.Thread.__init__(self, name="Finder")
+        self.__bot__ = telebot.TeleBot(TOKEN)
 
         @self.__bot__.message_handler(commands=['start', 'get'])
         def __start__(message):
@@ -139,9 +141,14 @@ class Bot(threading.Thread):
 
 
     def run(self):
-        self.__bot__.infinity_polling()
-
+        while self.__running__:
+            try:
+                self.__bot__.infinity_polling()
+            except ConnectionError as e:
+                logging.error(f"Exception {e}")
+                
     def stop(self):
+        self.__running__ = False
         self.__bot__.stop_bot()
 
     def push(self, msg):
